@@ -19,7 +19,9 @@ func (a authorize) Add(req *http.Request) {
 }
 
 func main() {
+	var inReplyToTweetID string
 	var clientToken, clientSecret, accessToken, accessSecret string
+	flag.StringVar(&inReplyToTweetID, "in-reply-to", "", "in-reply-to")
 	flag.StringVar(&clientToken, "client-token", os.Getenv("XPOST_CLIENT_TOKEN"), "Twitter ClientToken")
 	flag.StringVar(&clientSecret, "client-secret", os.Getenv("XPOST_CLIENT_SECRET"), "Twitter ClientSecret")
 	flag.StringVar(&accessToken, "access-token", os.Getenv("XPOST_ACCESS_TOKEN"), "Twitter AccessToken")
@@ -36,13 +38,15 @@ func main() {
 		Host: "https://api.twitter.com",
 	}
 
+	var reply *twitter.CreateTweetReply
+	if inReplyToTweetID != "" {
+		reply = &twitter.CreateTweetReply{
+			InReplyToTweetID: inReplyToTweetID,
+		}
+	}
 	req := twitter.CreateTweetRequest{
-		Text: strings.Join(flag.Args(), " "),
-		/*
-			Reply: &twitter.CreateTweetReply{
-				InReplyToTweetID: entry.ID,
-			},
-		*/
+		Text:  strings.Join(flag.Args(), " "),
+		Reply: reply,
 	}
 	_, err := client.CreateTweet(context.Background(), req)
 	if err != nil {
